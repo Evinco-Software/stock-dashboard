@@ -2,15 +2,19 @@ name: 自動更新股市儀表板
 
 on:
   schedule:
-    # 每天 UTC 時間 22:00 執行 (約香港時間早上 06:00，美股收盤後)
+    # 每天 UTC 時間 22:00 執行 (約香港時間早上 06:00)
     - cron: '0 22 * * 1-5'
-  workflow_dispatch: # 允許在網頁上手動按鈕觸發
+  workflow_dispatch: 
+
+# 加入環境變數，強制使用新版 Node.js 24 以消除官方警告
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-and-update:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # 允許機器人把產生的 HTML 存回專案
+      contents: write # 允許腳本把更新後的 HTML 寫入儲存庫
 
     steps:
     - name: 下載最新的程式碼
@@ -34,4 +38,11 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add index.html
-        git diff --quiet && git diff --staged --quiet || (git commit -m "自動更新：最新股市真實數據" && git push)
+        
+        # 使用安全的 if...else 語法來檢查檔案是否有變動，完美解決 exit code 2 錯誤
+        if ! git diff --staged --quiet; then
+          git commit -m "自動更新：最新股市真實數據"
+          git push
+        else
+          echo "資料無變動，略過提交。"
+        fi
