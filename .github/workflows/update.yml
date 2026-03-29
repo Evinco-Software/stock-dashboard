@@ -31,7 +31,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: 執行 Python 腳本抓取資料並生成網頁
-      run: python generate_real_dashboard.py
+      run: python stock.py
 
     - name: 將最新生成的 index.html 提交到 GitHub
       run: |
